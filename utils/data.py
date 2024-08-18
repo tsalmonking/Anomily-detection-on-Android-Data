@@ -17,6 +17,7 @@ def get_train_features_labels(feature_files, labels, k):
 
     selector = SelectKBest(score_func=chi2, k=k).fit(X, y)
     vectorizer = vectorizer.restrict(selector.get_support())
+
     X = vectorizer.transform(df['features'])
 
     return X, y, vectorizer

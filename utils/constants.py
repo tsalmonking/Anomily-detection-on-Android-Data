@@ -2,6 +2,7 @@ clf_path = 'classifiers/baseline.pkl'
 vect_path = 'classifiers/vectorizer.pkl'
 outlier_dir = 'classifiers/outlier_detectors/'
 results_dir = 'results/'
+figures_path = 'figures/'
 
 training_feature_files = 'DREBIN/files'
 training_labels_csv = 'DREBIN/training_set.csv'

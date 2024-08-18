@@ -63,6 +63,16 @@ with zipfile.ZipFile(test_features_track1_2_mw, 'r') as zip_ref:
     zip_ref.extractall('test_dataset/test_set_features_track1_2_files/')
 os.remove(test_features_track1_2_mw)
 
+
+with zipfile.ZipFile(test_features_path_1, 'r') as zip_ref:
+    zip_ref.extractall('test_dataset/test_set_features_track3_r1_files/')
+os.remove(test_features_path_1)
+with zipfile.ZipFile(test_features_path_2, 'r') as zip_ref:
+    zip_ref.extractall('test_dataset/test_set_features_track3_r2_files/')
+os.remove(test_features_path_2)
+with zipfile.ZipFile(test_features_path_3, 'r') as zip_ref:
+    zip_ref.extractall('test_dataset/test_set_features_track3_r3_files/')
+os.remove(test_features_path_3)
 with zipfile.ZipFile(test_features_path_4, 'r') as zip_ref:
     zip_ref.extractall('test_dataset/test_set_features_track3_r4_files/')
 os.remove(test_features_path_4)
