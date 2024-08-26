@@ -27,8 +27,14 @@ from collections import Counter
 
 from pyod.models.ecod import ECOD
 from pyod.models.copod import COPOD
+
 from pyod.models.pca import PCA
 from pyod.models.kpca import KPCA
+from pyod.models.mcd import MCD
+from pyod.models.cd import CD
+from pyod.models.ocsvm import OCSVM
+from pyod.models.lmdd import LMDD
+
 from pyod.models.rod import ROD
 from pyod.models.hbos import HBOS
 from pyod.models.dif import DIF
@@ -37,8 +43,16 @@ from pyod.models.so_gaal import SO_GAAL
 from pyod.models.mo_gaal import MO_GAAL
 from pyod.models.rgraph import RGraph
 from pyod.models.lunar import LUNAR
+from pyod.models.iforest import IForest
+from pyod.models.lof import LOF
 
-test_set = 1
+from torch_geometric.data import Data
+from pygod.detector import (AdONE, DOMINANT, ANOMALOUS, AnomalyDAE, CoLA, 
+                            CONAD, DMGD, DOMINANT, DONE, GAAN, GADNR, GAE,
+                            GUIDE, OCGNN, ONE, Radar, SCAN)
+
+
+test_set = int(sys.argv[1])
 
 results_classification_file = os.path.join(results_dir, f'results_c_{test_set}.pkl')
 results_outlier_detection_file = os.path.join(results_dir, f'results_od_{test_set}.pkl')
@@ -49,7 +63,7 @@ train_baseline = False
 train_outlier = False
 compute_results = True
 plot_results = True
-plot_selected_features = True
+plot_selected_features = False
 features_num = 1000
 
 X_train, y_train, vect = get_train_features_labels(training_feature_files, training_labels_csv, features_num)
@@ -91,23 +105,54 @@ else:
 if train_outlier:
     outlier_detectors = [
         # Probabilistic
-        ECOD(),
-        COPOD(),
+        #ECOD(),
+        #COPOD(),
+        
         # Linear Model
-        PCA(),
+        #PCA(),
         #KPCA(), # --> Takes too much resources to train
+        MCD(),
+        #CD(), # --> # --> Takes too much resources to train
+        OCSVM(),
+        #LMDD(), # --> Takes too much resources to train
+        
         # Proximity-Based
         #ROD(), # --> Takes too much resources to train
-        HBOS(),
+        #HBOS(),
+        
         # Outlier Ensembles
-        DIF(),
+        #DIF(),
         #SUOD(), # --> Takes too much resources to train
+        
         # Neural Networks
-        SO_GAAL(),
-        # MO_GAAL(), --> Takes too much resources to train
+        #SO_GAAL(),
+        #MO_GAAL(),
+        
         # Graph-based
         #RGraph(), # --> Takes too much resources to train
-        LUNAR()
+        #LUNAR()
+
+        IForest(),
+        LOF(),
+
+        # Graph-based one from pygod
+        """AdONE(),
+        DOMINANT(),
+        ANOMALOUS(),
+        AnomalyDAE(),
+        CoLA(),
+        CONAD(),
+        DMGD(),
+        DOMINANT(),
+        DONE(),
+        GAAN(),
+        GADNR(),
+        GAE(),
+        GUIDE(),
+        OCGNN(),
+        ONE(),
+        Radar(),
+        SCAN(),"""
     ]
 
     for clf in outlier_detectors:
@@ -118,11 +163,16 @@ if train_outlier:
 
         dump(clf, os.path.join(outlier_dir, f"{clf.__class__.__name__}.pkl"))
         print(f"finishing saving {clf.__class__.__name__}")
-        exit(0)
+        #exit(0)
 
 else:
-    outlier_detector_names = ['ECOD', 'COPOD', 'PCA', 'HBOS', 
-                                'DIF', 'SO_GAAL', 'LUNAR']
+    """outlier_detector_names = ['ECOD', 'COPOD', 'PCA', 'HBOS', 
+                                'DIF', 'SO_GAAL', 'LUNAR']"""
+    outlier_detector_names = ['IForest', 'LOF', 'MCD', 'OCSVM']
+    """outlier_detector_names = ['AdONE', 'DOMINANT', 'ANOMALOUS', 'AnomalyDAE', 'CoLA', 
+                            'CONAD', 'DMGD', 'DOMINANT', 'DONE', 'GAAN', 'GADNR', 'GAE',
+                            'GUIDE', 'OCGNN', 'ONE', 'Radar', 'SCAN']"""
+
     outlier_detectors = {name: load(os.path.join(outlier_dir, f"{name}.pkl")) for name in outlier_detector_names}
 
 
@@ -138,6 +188,8 @@ if compute_results:
 
     if test_set == 0:
         X_test, y_test = get_test_features_labels(testing_track_1_2_feature_files, testing_labels_json, vect)
+        print(sum(y_test))
+        exit(0)
     else:
         X_test, y_test = get_test_features_labels(testing_track_3_feature_files[test_set-1], testing_labels_json, vect)
     y_pred = model.predict(X_test)
@@ -289,7 +341,7 @@ if plot_results:
         
     axs.set_title(f'ROC Curve')
     axs.legend(loc="lower right")
-    axs.set_xscale('log')
+    #axs.set_xscale('log')
     plt.tight_layout()
     plt.savefig(os.path.join(figures_path, f'roc_classification_{test_set}.pdf'))
     plt.show()
@@ -308,7 +360,7 @@ if plot_results:
         
         axs.set_title(f'ROC Curves - {titles[i].capitalize()}')
         axs.legend(loc="lower right")
-        axs.set_xscale('log')
+        #axs.set_xscale('log')
         plt.tight_layout()
         plt.savefig(os.path.join(figures_path, f'roc_{test_set}_{titles[i]}.pdf'))
         plt.show()
